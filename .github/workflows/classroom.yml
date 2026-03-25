@@ -1,0 +1,223 @@
+name: Autograding Tests
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  contents: read
+
+jobs:
+  autograding:
+    name: Run Autograding Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+
+      cassandra:
+        image: cassandra:4.1
+        ports:
+          - 9042:9042
+        env:
+          CASSANDRA_CLUSTER_NAME: TestCluster
+          CASSANDRA_ENDPOINT_SNITCH: SimpleSnitch
+        # Cassandra takes ~90s to be ready; health check retries accordingly
+        options: >-
+          --health-cmd "cqlsh -e 'describe cluster'"
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 15
+          --health-start-period 60s
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install test dependencies
+        run: pip install pymongo "cassandra-driver" pytest pytest-json-report
+
+      - name: Verify MongoDB is ready
+        run: |
+          python - <<'EOF'
+          from pymongo import MongoClient
+          import time, sys
+          for i in range(10):
+              try:
+                  MongoClient("localhost", 27017, serverSelectionTimeoutMS=3000).admin.command("ping")
+                  print("MongoDB ready")
+                  sys.exit(0)
+              except Exception as e:
+                  print(f"Waiting for MongoDB ({i+1}/10)... {e}")
+                  time.sleep(5)
+          print("MongoDB never became ready")
+          sys.exit(1)
+          EOF
+
+      - name: Verify Cassandra is ready
+        run: |
+          python - <<'EOF'
+          from cassandra.cluster import Cluster
+          import time, sys
+          for i in range(20):
+              try:
+                  cluster = Cluster(["localhost"], connect_timeout=10)
+                  session = cluster.connect()
+                  session.execute("SELECT release_version FROM system.local")
+                  cluster.shutdown()
+                  print("Cassandra ready")
+                  sys.exit(0)
+              except Exception as e:
+                  print(f"Waiting for Cassandra ({i+1}/20)... {e}")
+                  time.sleep(10)
+          print("Cassandra never became ready")
+          sys.exit(1)
+          EOF
+
+      - name: Load MongoDB — run student commands.js
+        # Run student script with explicit --file semantics.
+        # Keep continue behavior so tests can still report partial-credit details.
+        run: |
+          which mongosh || npm install -g mongosh
+          mongosh --quiet "mongodb://localhost:27017/ecommerce" --file mongo/commands.js || true
+
+      - name: Sanity-check MongoDB data load
+        run: |
+          python - <<'EOF'
+          from pymongo import MongoClient
+          import sys
+
+          db = MongoClient("localhost", 27017)["ecommerce"]
+          required = ["orders", "products", "users", "clicks"]
+          counts = {name: db[name].count_documents({}) for name in required}
+          print("MongoDB collection counts:", counts)
+
+          # Non-fatal check: provides clear signal in logs without blocking tests.
+          if any(counts[name] == 0 for name in required):
+              print("WARNING: One or more required MongoDB collections are empty.")
+              print("This usually means mongo/commands.js did not run as expected.")
+          EOF
+
+      - name: Load Cassandra — run student schema.cql and queries.cql
+        run: |
+          pip install "cassandra-driver[cqlsh]" 2>/dev/null || true
+          python - <<'EOF'
+          from cassandra.cluster import Cluster
+          import re, sys
+
+          def run_cql_file(session, path):
+              with open(path) as f:
+                  raw = f.read()
+              # Strip single-line comments and split on semicolons
+              raw = re.sub(r'--[^\n]*', '', raw)
+              statements = [s.strip() for s in raw.split(';') if s.strip()]
+              errors = 0
+              for stmt in statements:
+                  try:
+                      session.execute(stmt)
+                  except Exception as e:
+                      print(f"  WARN: {e} — statement: {stmt[:60]}...")
+                      errors += 1
+              return errors
+
+          cluster = Cluster(["localhost"])
+          session = cluster.connect()
+
+          print("Loading cassandra/schema.cql ...")
+          errs = run_cql_file(session, "cassandra/schema.cql")
+          print(f"  {errs} error(s)")
+
+          print("Loading cassandra/queries.cql ...")
+          errs = run_cql_file(session, "cassandra/queries.cql")
+          print(f"  {errs} error(s)")
+
+          cluster.shutdown()
+          EOF
+
+      - name: Run test suite
+        run: |
+          pytest tests/ -v --tb=short \
+            --json-report --json-report-file=test_results.json \
+            2>&1 | tee pytest_output.txt
+        continue-on-error: true
+
+      - name: Report score
+        run: |
+          python - <<'EOF'
+          import json, sys
+
+          with open("test_results.json") as f:
+              results = json.load(f)
+
+          # Point values keyed by test node id substring
+          POINTS = {
+              "test_required_files":           5,
+              "test_commands_js_not_empty":    1,
+              "test_schema_cql_not_empty":     1,
+              "test_readme_has_run":           1,
+              "test_design_rationale":         1,
+              "test_tradeoffs_min_length":     1,
+              "test_tradeoffs_covers_topics":  2,
+              "test_consistency_quorum":       2,
+              "test_collections_exist":        3,
+              "test_orders_embedded_items":    3,
+              "test_orders_user_id_ref":       2,
+              "test_revenue_category_agg":     4,
+              "test_top_products_agg":         4,
+              "test_clicks_query":             2,
+              "test_indexes_exist":            3,
+              "test_sample_outputs":           2,
+              "test_keyspace_exists":          2,
+              "test_keyspace_replication":     2,
+              "test_orders_table_exists":      1,
+              "test_orders_partition_key":     3,
+              "test_revenue_table_exists":     1,
+              "test_clicks_table_exists":      1,
+              "test_clicks_partition_key":     3,
+              "test_orders_has_data":          1,
+              "test_revenue_has_data":         1,
+              "test_clicks_has_data":          1,
+              "test_query_orders_partition":   3,
+              "test_query_clicks_limit":       3,
+          }
+
+          earned = 0
+          possible = sum(POINTS.values())
+          detail = []
+
+          for test in results.get("tests", []):
+              node = test["nodeid"]
+              outcome = test["outcome"]  # "passed" | "failed" | "error"
+              for key, pts in POINTS.items():
+                  if key in node:
+                      if outcome == "passed":
+                          earned += pts
+                          detail.append(f"  ✓ {key} (+{pts})")
+                      else:
+                          detail.append(f"  ✗ {key} (0/{pts})")
+                      break
+
+          print("\n" + "="*50)
+          print(f"SCORE: {earned} / {possible}")
+          print("="*50)
+          for line in detail:
+              print(line)
+          EOF
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            test_results.json
+            pytest_output.txt

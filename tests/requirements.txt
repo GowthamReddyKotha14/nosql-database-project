@@ -1,0 +1,4 @@
+pymongo>=4.6
+cassandra-driver>=3.29
+pytest>=8.0
+pytest-json-report>=1.5
