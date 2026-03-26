@@ -49,11 +49,13 @@ jobs:
       - name: Verify MongoDB is ready
         run: |
           python - <<'EOF'
+          import os
           from pymongo import MongoClient
           import time, sys
+          uri = os.environ.get("MONGO_URI", "mongodb://localhost:27017/")
           for i in range(10):
               try:
-                  MongoClient("localhost", 27017, serverSelectionTimeoutMS=3000).admin.command("ping")
+                  MongoClient(uri, serverSelectionTimeoutMS=3000).admin.command("ping")
                   print("MongoDB ready")
                   sys.exit(0)
               except Exception as e:
@@ -93,10 +95,11 @@ jobs:
       - name: Sanity-check MongoDB data load
         run: |
           python - <<'EOF'
+          import os
           from pymongo import MongoClient
           import sys
 
-          db = MongoClient("localhost", 27017)["ecommerce"]
+          db = MongoClient(os.environ.get("MONGO_URI", "mongodb://localhost:27017/"))["ecommerce"]
           required = ["orders", "products", "users", "clicks"]
           counts = {name: db[name].count_documents({}) for name in required}
           print("MongoDB collection counts:", counts)
