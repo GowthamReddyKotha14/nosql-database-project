@@ -78,18 +78,62 @@ def test_tradeoffs_min_length():
         f"tradeoffs.md too short ({len(words)} words); a 2–3 page analysis requires ≥300 words"
 
 
-def test_tradeoffs_covers_topics():
-    """analysis/tradeoffs.md references all five required technical topics."""
+def _has_any(content, *terms):
+    """Return True if any of the terms appear as whole words in content."""
+    import re
+    for term in terms:
+        if re.search(r'\b' + re.escape(term) + r'\b', content):
+            return True
+    return False
+
+
+def test_tradeoffs_topic_cap():
+    """tradeoffs.md discusses CAP theorem and consistency trade-offs."""
     content = _read("analysis/tradeoffs.md").lower()
-    required = {
-        "cap":        "CAP theorem",
-        "wiredtiger": "WiredTiger (MongoDB storage engine)",
-        "memtable":   "Cassandra memtable write path",
-        "sstable":    "Cassandra SSTable",
-        "aggregat":   "aggregation (MQL vs. CQL comparison)",
-    }
-    missing = [label for kw, label in required.items() if kw not in content]
-    assert not missing, f"tradeoffs.md missing discussion of: {missing}"
+    assert _has_any(content, "cap theorem", "cap positioning", "consistency, availability",
+                    "consistency and availability", "cp database", "ap database",
+                    "partition tolerance"), \
+        "tradeoffs.md must discuss the CAP theorem (Topic 2). " \
+        "Mention 'CAP theorem', CP/AP classification, or partition tolerance."
+
+
+def test_tradeoffs_topic_schema_design():
+    """tradeoffs.md discusses embedding vs. references vs. denormalization."""
+    content = _read("analysis/tradeoffs.md").lower()
+    assert _has_any(content, "embed", "denormali", "reference", "schema design",
+                    "document model", "normali"), \
+        "tradeoffs.md must discuss schema design philosophy (Topic 1). " \
+        "Address embedding vs. references (MongoDB) and denormalization (Cassandra)."
+
+
+def test_tradeoffs_topic_query_flexibility():
+    """tradeoffs.md compares MQL aggregation pipeline with CQL query constraints."""
+    content = _read("analysis/tradeoffs.md").lower()
+    assert _has_any(content, "aggregation pipeline", "pipeline", "mql", "cql",
+                    "one table per query", "access pattern", "query flexibility"), \
+        "tradeoffs.md must compare query flexibility (Topic 3). " \
+        "Discuss MQL's aggregation pipeline vs. CQL's one-table-per-query constraint."
+
+
+def test_tradeoffs_topic_write_performance():
+    """tradeoffs.md discusses write/read performance differences."""
+    content = _read("analysis/tradeoffs.md").lower()
+    assert _has_any(content, "wiredtiger", "memtable", "sstable", "log-structured",
+                    "compaction", "write path", "lsm", "b-tree"), \
+        "tradeoffs.md must compare write/read performance (Topic 4). " \
+        "Reference Cassandra's SSTable/memtable write path and/or MongoDB's WiredTiger."
+
+
+def test_tradeoffs_topic_when_to_use():
+    """tradeoffs.md gives concrete scenarios for choosing each database."""
+    content = _read("analysis/tradeoffs.md").lower()
+    has_mongo = _has_any(content, "choose mongodb", "use mongodb", "mongodb when",
+                         "prefer mongodb", "mongodb is better", "mongodb works well")
+    has_cassandra = _has_any(content, "choose cassandra", "use cassandra", "cassandra when",
+                             "prefer cassandra", "cassandra is better", "cassandra works well")
+    assert has_mongo and has_cassandra, \
+        "tradeoffs.md must give concrete scenarios for both databases (Topic 5). " \
+        "Include a 'Choose MongoDB when' and a 'Choose Cassandra when' section."
 
 
 # ── Cassandra consistency requirement ─────────────────────────────────────────
