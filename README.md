@@ -61,6 +61,13 @@ docker exec -i mongodb mongosh \
 
 > **Tip — interactive shell:** `docker exec -it mongodb mongosh -u admin -p bigdata123 --authenticationDatabase admin ecommerce`
 
+**Running the autograder tests locally** requires telling pytest how to authenticate:
+
+```bash
+export MONGO_URI="mongodb://admin:bigdata123@localhost:27017/?authSource=admin"
+pytest tests/ -v
+```
+
 ### Part 2: Cassandra
 
 Cassandra takes ~2 minutes to become ready after `docker compose up`. Wait until this returns
