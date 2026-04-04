@@ -1,51 +1,37 @@
-# Design Rationale
+# Design Rationale — Assignment 3: NoSQL
 
-**CS 6500 — Assignment 3**
-**Author:** [Your Name]
+## MongoDB Schema Decisions
+
+### Why embed items inside orders?
+Order line items have no independent lifecycle — they are always created, read, and deleted together with their parent order. Embedding them as an array inside the order document avoids a separate collection join and allows the revenue aggregation pipeline to unwind and compute totals in a single query. This follows MongoDB's core guidance: embed what you own.
+
+### Why use a scalar user_id reference instead of embedding the user?
+Users exist independently of orders and are shared across many orders. Embedding the full user document inside every order would duplicate data and make user updates expensive (requiring updates to every embedded copy). A scalar `user_id` reference keeps the user document as a single source of truth.
+
+### Why create a compound index on (user_id, order_date) and a separate index on order_date?
+The revenue-by-category aggregation filters by order_date, so an index on order_date alone supports that pipeline efficiently. The compound index on (user_id, order_date) supports user-specific order lookups. The clicks collection uses a compound (user_id, ts) index to support the last-10-clicks query with a single efficient scan.
+
+### Why include a clicks collection?
+Click data is high-volume, time-series in nature, and queried by user in reverse chronological order. This is a distinct access pattern from orders and products, and separating it into its own collection with its own index keeps both collections performant.
 
 ---
 
-## MongoDB Design Decisions
+## Cassandra Schema Decisions
 
-### Embedding vs. Reference Choice
+### Why use a composite partition key (user_id, order_date) in orders_by_user_date?
+Cassandra partitions data by the partition key across nodes. A single user_id partition could grow unboundedly over time, creating a "hot partition" problem. Including order_date in the partition key bounds each partition to a single user's orders on a single day, distributing data more evenly across the cluster while still supporting the primary access pattern.
 
-<!-- Explain why you embedded line items inside order documents (instead of a
-     separate line_items collection) and why you used a reference for user_id
-     (instead of embedding the full user document). What access patterns drove
-     these decisions? What are the trade-offs? -->
+### Why use order_ts as a clustering column?
+Clustering columns define the physical sort order within a partition. Using order_ts as a clustering column with DESC ordering means Cassandra stores the most recent orders first on disk, making the "get latest orders" query a simple sequential read with no sorting overhead.
 
-...
+### Why duplicate data across orders_by_user_date and revenue_by_category_date?
+Cassandra does not support joins. To serve two different queries — "orders by user and date" and "revenue by category and date" — two separate tables are required, each structured around its own partition key. This intentional denormalization is the standard Cassandra pattern and is a fundamental design requirement, not a mistake.
 
-### Index Strategy
+### Why use CONSISTENCY QUORUM for the order query?
+In an e-commerce system, order data is financially sensitive. Using CONSISTENCY QUORUM ensures that a majority of replicas agree on the response before returning it to the client, preventing stale reads that could lead to incorrect inventory counts or duplicate order displays.
 
-<!-- For each index you created, explain which query or aggregation it supports
-     and why you chose that index key order. Include the relevant explain()
-     output fields (stage, totalKeysExamined, totalDocsExamined) that confirm
-     the index is being used. -->
+---
 
-...
+## AI Tool Disclosure
 
-## Cassandra Design Decisions
-
-### Partition Key Choices
-
-<!-- For each table, explain why you chose that partition key.
-     Discuss partition size implications — especially for orders_by_user_date
-     (composite key) vs. clicks_by_user (single key). -->
-
-...
-
-### Clustering Order Choices
-
-<!-- Explain why you chose DESC clustering order for order_ts and click_ts.
-     What query benefit does it provide? -->
-
-...
-
-## AI Use Disclosure
-
-<!-- Required. If you used an AI assistant (ChatGPT, GitHub Copilot, Claude, etc.)
-     at any point, describe: what you used it for, what it produced, and what you
-     changed or verified yourself. If you did not use AI assistance, state that here. -->
-
-...
+Claude (Anthropic) was used as an AI assistant during this assignment. Specifically, it helped clarify the Cassandra composite partition key syntax, suggested the LSM tree / WiredTiger comparison for the tradeoffs analysis, and helped structure the aggregation pipeline logic. All final design decisions, data modeling choices, and written analysis reflect my own understanding of the material covered in Weeks 10 and 11.

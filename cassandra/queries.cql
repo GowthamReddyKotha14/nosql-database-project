@@ -1,142 +1,141 @@
--- Assignment 3 — Part 2: Cassandra Queries
--- Run with: cqlsh -f cassandra/queries.cql  (after schema.cql has been loaded)
---
--- Starter inserts are preloaded below so students can focus on query writing.
+-- cassandra/queries.cql
+-- CS 6500 Assignment 3 — Cassandra Inserts, Queries, and Consistency Demo
+-- Run: docker exec -i cassandra cqlsh < cassandra/queries.cql
 
 USE ecommerce;
 
--- ─── Inserts: orders_by_user_date (minimum 10 rows) ──────────────────────────
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_001', '2024-01-15', '2024-01-15 10:30:00+0000', 'ORD_001', 139.97, 'completed',
-	'[{"product_id":"PROD_001","name":"Wireless Headphones","quantity":1,"price":79.99},{"product_id":"PROD_004","name":"Yoga Mat","quantity":2,"price":29.99}]');
+-- ─── INSERT: orders_by_user_date (≥10 rows) ──────────────────────────────────
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u1', '2026-01-15', '2026-01-15 10:00:00+0000', 'o1', 'delivered', 1359.97, '[{"product_id":"p1","qty":1,"price":1299.99},{"product_id":"p2","qty":2,"price":29.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_001', '2024-01-15', '2024-01-15 16:00:00+0000', 'ORD_008', 49.99, 'completed',
-	'[{"product_id":"PROD_007","name":"Laptop Backpack","quantity":1,"price":49.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u2', '2026-01-16', '2026-01-16 11:00:00+0000', 'o2', 'delivered', 399.98, '[{"product_id":"p3","qty":1,"price":349.99},{"product_id":"p8","qty":1,"price":49.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_001', '2024-01-18', '2024-01-18 09:15:00+0000', 'ORD_003', 164.98, 'shipped',
-	'[{"product_id":"PROD_003","name":"Coffee Maker","quantity":1,"price":129.99},{"product_id":"PROD_006","name":"Desk Lamp","quantity":1,"price":34.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u3', '2026-01-17', '2026-01-17 12:00:00+0000', 'o3', 'shipped', 159.97, '[{"product_id":"p5","qty":2,"price":49.99},{"product_id":"p6","qty":1,"price":59.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_001', '2024-01-22', '2024-01-22 13:30:00+0000', 'ORD_006', 29.99, 'pending',
-	'[{"product_id":"PROD_004","name":"Yoga Mat","quantity":1,"price":29.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u4', '2026-01-18', '2026-01-18 13:00:00+0000', 'o4', 'delivered', 289.98, '[{"product_id":"p7","qty":1,"price":199.99},{"product_id":"p9","qty":1,"price":89.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_002', '2024-01-16', '2024-01-16 14:20:00+0000', 'ORD_002', 199.99, 'completed',
-	'[{"product_id":"PROD_005","name":"Smart Watch","quantity":1,"price":199.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u5', '2026-01-19', '2026-01-19 14:00:00+0000', 'o5', 'delivered', 599.99, '[{"product_id":"p4","qty":1,"price":599.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_002', '2024-01-20', '2024-01-20 15:45:00+0000', 'ORD_007', 79.99, 'completed',
-	'[{"product_id":"PROD_001","name":"Wireless Headphones","quantity":1,"price":79.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u1', '2026-02-01', '2026-02-01 10:00:00+0000', 'o6', 'delivered', 184.96, '[{"product_id":"p10","qty":3,"price":44.99},{"product_id":"p5","qty":1,"price":49.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_003', '2024-01-18', '2024-01-18 16:45:00+0000', 'ORD_004', 139.98, 'completed',
-	'[{"product_id":"PROD_002","name":"Running Shoes","quantity":1,"price":89.99},{"product_id":"PROD_007","name":"Laptop Backpack","quantity":1,"price":49.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u2', '2026-02-03', '2026-02-03 11:00:00+0000', 'o7', 'shipped', 1699.97, '[{"product_id":"p1","qty":1,"price":1299.99},{"product_id":"p7","qty":2,"price":199.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_003', '2024-01-22', '2024-01-22 10:00:00+0000', 'ORD_009', 219.97, 'shipped',
-	'[{"product_id":"PROD_005","name":"Smart Watch","quantity":1,"price":199.99},{"product_id":"PROD_004","name":"Yoga Mat","quantity":1,"price":29.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u3', '2026-02-05', '2026-02-05 12:00:00+0000', 'o8', 'delivered', 1299.97, '[{"product_id":"p3","qty":2,"price":349.99},{"product_id":"p4","qty":1,"price":599.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_004', '2024-01-20', '2024-01-20 11:00:00+0000', 'ORD_005', 119.98, 'completed',
-	'[{"product_id":"PROD_008","name":"Bluetooth Speaker","quantity":2,"price":59.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u4', '2026-02-10', '2026-02-10 13:00:00+0000', 'o9', 'delivered', 329.83, '[{"product_id":"p2","qty":5,"price":29.99},{"product_id":"p9","qty":2,"price":89.99}]');
 
-INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, total, status, items_summary)
-VALUES ('USER_005', '2024-01-19', '2024-01-19 12:30:00+0000', 'ORD_010', 89.99, 'completed',
-	'[{"product_id":"PROD_002","name":"Running Shoes","quantity":1,"price":89.99}]');
+INSERT INTO orders_by_user_date (user_id, order_date, order_ts, order_id, status, total, items)
+VALUES ('u5', '2026-02-14', '2026-02-14 14:00:00+0000', 'o10', 'shipped', 164.97, '[{"product_id":"p6","qty":2,"price":59.99},{"product_id":"p10","qty":1,"price":44.99}]');
 
--- ─── Inserts: revenue_by_category_date (minimum 10 rows) ─────────────────────
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Electronics', '2024-01-15', 279.96, 2);
+-- ─── INSERT: revenue_by_category_date (≥10 rows) ────────────────────────────
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Electronics', '2026-01-15', 'o1', 'p1', 1, 1299.99, 1299.99);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Sports', '2024-01-15', 89.97, 3);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Electronics', '2026-01-15', 'o1', 'p2', 2, 29.99, 59.98);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Clothing', '2024-01-15', 49.99, 1);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Furniture', '2026-01-16', 'o2', 'p3', 1, 349.99, 349.99);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Electronics', '2024-01-16', 199.99, 1);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Furniture', '2026-01-16', 'o2', 'p8', 1, 49.99, 49.99);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Home & Kitchen', '2024-01-18', 164.98, 2);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Books', '2026-01-17', 'o3', 'p5', 2, 49.99, 99.98);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Clothing', '2024-01-18', 139.98, 2);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Books', '2026-01-17', 'o3', 'p6', 1, 59.99, 59.99);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Clothing', '2024-01-19', 89.99, 1);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Electronics', '2026-01-18', 'o4', 'p7', 1, 199.99, 199.99);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Electronics', '2024-01-20', 199.97, 2);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Electronics', '2026-01-18', 'o4', 'p9', 1, 89.99, 89.99);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Electronics', '2024-01-22', 199.99, 1);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Furniture', '2026-01-19', 'o5', 'p4', 1, 599.99, 599.99);
 
-INSERT INTO revenue_by_category_date (category, order_date, total_revenue, order_count)
-VALUES ('Sports', '2024-01-22', 59.98, 2);
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Books', '2026-02-01', 'o6', 'p10', 3, 44.99, 134.97);
 
--- ─── Inserts: clicks_by_user (minimum 10 rows) ───────────────────────────────
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-15 10:00:00+0000', 'view',        'PROD_001');
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Books', '2026-02-01', 'o6', 'p5', 1, 49.99, 49.99);
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-15 10:05:00+0000', 'add_to_cart', 'PROD_001');
+INSERT INTO revenue_by_category_date (category, order_date, order_id, product_id, quantity, unit_price, revenue)
+VALUES ('Electronics', '2026-02-03', 'o7', 'p1', 1, 1299.99, 1299.99);
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-15 10:10:00+0000', 'view',        'PROD_004');
+-- ─── INSERT: clicks_by_user (≥10 rows) ───────────────────────────────────────
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u1', '2026-01-15 10:00:00+0000', 'p1', 'product');
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-15 10:15:00+0000', 'add_to_cart', 'PROD_004');
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u1', '2026-01-15 10:05:00+0000', 'p2', 'product');
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-15 10:30:00+0000', 'purchase',    null);
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u1', '2026-01-15 10:10:00+0000', 'p7', 'product');
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-18 09:00:00+0000', 'view',        'PROD_003');
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u1', '2026-01-16 09:00:00+0000', 'p3', 'product');
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-18 09:05:00+0000', 'view',        'PROD_006');
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u2', '2026-01-16 11:00:00+0000', 'p1', 'product');
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-18 09:10:00+0000', 'add_to_cart', 'PROD_003');
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u2', '2026-01-17 12:00:00+0000', 'p4', 'product');
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-18 09:12:00+0000', 'add_to_cart', 'PROD_006');
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u3', '2026-01-17 13:00:00+0000', 'p5', 'product');
 
-INSERT INTO clicks_by_user (user_id, click_ts, action, product_id)
-VALUES ('USER_001', '2024-01-18 09:15:00+0000', 'purchase',    null);
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u3', '2026-01-18 14:00:00+0000', 'p6', 'product');
 
--- ─── Query 1: Orders for USER_001 on 2024-01-15, newest first ────────────────
--- TODO: write the SELECT statement. Must hit the partition key exactly.
--- No ALLOW FILTERING.
--- SELECT ...
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u4', '2026-01-18 15:00:00+0000', 'p9', 'product');
 
--- ─── Query 2: Electronics revenue 2024-01-15 → 2024-01-22 ───────────────────
--- TODO: write the SELECT statement. No ALLOW FILTERING.
--- SELECT ...
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u5', '2026-01-19 16:00:00+0000', 'p4', 'product');
 
--- ─── Query 3: Last 10 clicks for USER_001 ────────────────────────────────────
--- TODO: query clicks_by_user with LIMIT 10. No ALLOW FILTERING.
--- SELECT ...
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u1', '2026-02-01 10:00:00+0000', 'p9', 'product');
 
--- ─── Consistency Level Demonstration ─────────────────────────────────────────
--- TODO: set CONSISTENCY QUORUM, then run one INSERT and one SELECT on
--- orders_by_user_date. After the statements, add a comment block explaining
--- what QUORUM means and why R + W > RF guarantees strong consistency.
---
--- NOTE (local Docker): this course stack runs a single Cassandra node.
--- With RF=3, QUORUM may raise "Cannot achieve consistency level QUORUM".
--- Keep your QUORUM explanation in comments, and if needed use ONE for local
--- execution so the script still runs end-to-end.
+INSERT INTO clicks_by_user (user_id, click_ts, product_id, page)
+VALUES ('u2', '2026-02-03 11:00:00+0000', 'p7', 'product');
 
+-- ─── QUERIES ──────────────────────────────────────────────────────────────────
+
+-- Query 1: Get orders for a specific user on a specific date
+SELECT * FROM ecommerce.orders_by_user_date
+WHERE user_id = 'u1' AND order_date = '2026-01-15';
+
+-- Query 2: Get revenue for Electronics on a specific date
+SELECT * FROM ecommerce.revenue_by_category_date
+WHERE category = 'Electronics' AND order_date = '2026-01-15';
+
+-- Query 3: Last 10 clicks for user u1
+SELECT * FROM ecommerce.clicks_by_user
+WHERE user_id = 'u1'
+LIMIT 10;
+
+-- ─── CONSISTENCY LEVEL DEMO ──────────────────────────────────────────────────
+
+-- CONSISTENCY QUORUM ensures a majority of replicas agree before returning
+-- This provides strong consistency at the cost of slightly higher latency
 CONSISTENCY QUORUM;
 
--- INSERT ...  (same table as Query 1)
--- SELECT ...  (same table as Query 1)
+SELECT * FROM ecommerce.orders_by_user_date
+WHERE user_id = 'u1' AND order_date = '2026-01-15';
 
--- EXPLANATION (replace this comment):
--- QUORUM requires ...
--- With RF=3, QUORUM means ...
--- R + W > RF guarantees strong consistency because ...
+-- CONSISTENCY ONE is faster but may return stale data
+CONSISTENCY ONE;
+
+SELECT * FROM ecommerce.clicks_by_user
+WHERE user_id = 'u1'
+LIMIT 10;

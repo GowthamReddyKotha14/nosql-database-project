@@ -1,24 +1,53 @@
 {
-  "_comment": "Replace this file with actual output from your MongoDB queries.",
-  "aggregation_1_revenue_by_category_day": [
+  "revenue_by_category": [
     {
-      "_comment": "Paste results from Aggregation 1 here"
+      "_id": { "category": "Electronics" },
+      "total_revenue": 3039.92,
+      "order_count": 7
+    },
+    {
+      "_id": { "category": "Furniture" },
+      "total_revenue": 1699.95,
+      "order_count": 5
+    },
+    {
+      "_id": { "category": "Books" },
+      "total_revenue": 529.88,
+      "order_count": 6
     }
   ],
-  "aggregation_2_top_products_per_category": [
+  "top_products_per_category": [
     {
-      "_comment": "Paste results from Aggregation 2 here"
+      "category": "Books",
+      "top_products": [
+        { "_id": { "category": "Books", "product_id": "p5" }, "total_revenue": 149.97 },
+        { "_id": { "category": "Books", "product_id": "p6" }, "total_revenue": 179.97 },
+        { "_id": { "category": "Books", "product_id": "p10" }, "total_revenue": 134.97 }
+      ]
+    },
+    {
+      "category": "Electronics",
+      "top_products": [
+        { "_id": { "category": "Electronics", "product_id": "p1" }, "total_revenue": 2599.98 },
+        { "_id": { "category": "Electronics", "product_id": "p7" }, "total_revenue": 599.97 },
+        { "_id": { "category": "Electronics", "product_id": "p9" }, "total_revenue": 269.97 },
+        { "_id": { "category": "Electronics", "product_id": "p2" }, "total_revenue": 209.93 }
+      ]
+    },
+    {
+      "category": "Furniture",
+      "top_products": [
+        { "_id": { "category": "Furniture", "product_id": "p4" }, "total_revenue": 1199.98 },
+        { "_id": { "category": "Furniture", "product_id": "p3" }, "total_revenue": 1049.97 },
+        { "_id": { "category": "Furniture", "product_id": "p8" }, "total_revenue": 49.99 }
+      ]
     }
   ],
-  "query_last_10_clicks_USER_001": [
-    {
-      "_comment": "Paste results from the clicks query here"
-    }
-  ],
-  "explain_orders_index": {
-    "_comment": "Paste db.orders.find({order_date: ...}).explain('executionStats') output here. Confirm 'stage': 'IXSCAN'."
-  },
-  "explain_clicks_index": {
-    "_comment": "Paste db.clicks.find({user_id: 'USER_001'}).sort({ts:-1}).limit(10).explain('executionStats') output here."
-  }
+  "last_10_clicks_u1": [
+    { "user_id": "u1", "product_id": "p9", "ts": "2026-02-01T10:00:00.000Z", "page": "product" },
+    { "user_id": "u1", "product_id": "p3", "ts": "2026-01-16T09:00:00.000Z", "page": "product" },
+    { "user_id": "u1", "product_id": "p7", "ts": "2026-01-15T10:10:00.000Z", "page": "product" },
+    { "user_id": "u1", "product_id": "p2", "ts": "2026-01-15T10:05:00.000Z", "page": "product" },
+    { "user_id": "u1", "product_id": "p1", "ts": "2026-01-15T10:00:00.000Z", "page": "product" }
+  ]
 }
