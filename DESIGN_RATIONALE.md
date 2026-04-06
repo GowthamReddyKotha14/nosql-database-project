@@ -1,4 +1,5 @@
-# Design Rationale — Assignment 3: NoSQL (Gowtham Kotha)
+# Design Rationale 
+## CS 6500 — Assignment 3 Author: Gowtham Reddy Kotha
 
 ## MongoDB Schema Decisions
 
