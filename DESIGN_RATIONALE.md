@@ -1,4 +1,4 @@
-# Design Rationale — Assignment 3: NoSQL
+# Design Rationale — Assignment 3: NoSQL (Gowtham Kotha)
 
 ## MongoDB Schema Decisions
 
