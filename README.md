@@ -1,78 +1,85 @@
-# CS 6500 Assignment 3: NoSQL
+# CS 6500 — Assignment 3: NoSQL Database Design and Querying
+
+**Due:** End of Week 12 (Sunday, 11:59 PM) **Total Points:** 50 **Prereqs:** Week 10 (MongoDB), Week 11 (Cassandra)
 
 ## Overview
-This repository contains solutions for Assignment 3, covering MongoDB (document store) and Cassandra (wide-column store) for an e-commerce analytics scenario.
 
-## Prerequisites
+Design and evaluate schemas across two NoSQL paradigms — document (MongoDB) and wide-column (Cassandra) — for an e-commerce analytics scenario.
 
-Start the Docker stack:
+## Repository Structure
 
-```bash
+```
+├── mongo/
+│   ├── commands.js             ← complete this (MongoDB operations)
+│   └── sample_outputs.json     ← complete this (query results + explain output)
+├── cassandra/
+│   ├── schema.cql              ← complete this (keyspace + table DDL)
+│   └── queries.cql             ← complete this (inserts, queries, consistency demo)
+├── analysis/
+│   └── tradeoffs.md            ← complete this (2–3 page comparative analysis)
+├── README.md                   ← update the "How to Run" section below
+└── DESIGN_RATIONALE.md         ← complete this (design decisions + AI use)
+```
+
+## How to Run
+
+### Prerequisites
+
+Start the Docker stack from your course materials:
+
+```
 cd docker
 docker compose up -d
 ```
 
-Verify services are running:
+Verify the services:
 
-```bash
+```
 docker compose ps   # mongodb and cassandra should be "Up"
 ```
 
----
+### Part 1: MongoDB
 
-## Part 1: MongoDB
+Starter data is embedded directly in `mongo/commands.js`. Run this from the root of your assignment repo:
 
-Run the setup and query script:
-
-```bash
+```
+# Run setup data + your query/aggregation work in one script
 docker exec -i mongodb mongosh \
   -u admin -p bigdata123 --authenticationDatabase admin \
   --quiet mongodb://localhost:27017/ecommerce --file mongo/commands.js
 ```
 
-Interactive shell:
+**Tip — interactive shell:** `docker exec -it mongodb mongosh -u admin -p bigdata123 --authenticationDatabase admin ecommerce`
 
-```bash
-docker exec -it mongodb mongosh -u admin -p bigdata123 --authenticationDatabase admin ecommerce
+Running the autograder tests locally requires telling pytest how to authenticate:
+
 ```
-
-Run autograder tests locally:
-
-```bash
 export MONGO_URI="mongodb://admin:bigdata123@localhost:27017/?authSource=admin"
 pytest tests/ -v
 ```
 
----
+### Part 2: Cassandra
 
-## Part 2: Cassandra
+Cassandra takes ~2 minutes to become ready after `docker compose up`. Wait until this returns output before running CQL:
 
-Wait ~2 minutes after `docker compose up` for Cassandra to become ready. Verify:
-
-```bash
+```
 docker exec cassandra cqlsh -e "DESCRIBE keyspaces"
 ```
 
-Create keyspace and tables:
+Then pipe your `.cql` files into the container's `cqlsh` directly — no `docker cp` needed:
 
-```bash
-docker exec -i cassandra cqlsh < cassandra/schema.cql
 ```
+# Step 1: create keyspace and tables
+docker exec -i cassandra cqlsh < cassandra/schema.cql
 
-Load data and run queries:
-
-```bash
+# Step 2: load provided sample data and run your queries
 docker exec -i cassandra cqlsh < cassandra/queries.cql
 ```
 
-Interactive shell:
-
-```bash
-docker exec -it cassandra cqlsh
-```
-
----
+**Tip — interactive shell:** `docker exec -it cassandra cqlsh`
 
 ## Submission
 
-Push completed work to the `main` branch before the deadline. Automated tests run on every push — check the **Actions** tab to monitor test results and score.
+Push your completed work to the `main` branch before the deadline. That's it — no separate submission step is required.
+
+Automated tests run on every push. Check the **Actions** tab in your repository to see which tests are passing and your current score.

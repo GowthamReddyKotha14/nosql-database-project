@@ -32,6 +32,6 @@ In an e-commerce system, order data is financially sensitive. Using CONSISTENCY 
 
 ---
 
-## AI Tool Disclosure
+## AI Use Disclosure
 
-Claude (Anthropic) was used as an AI assistant during this assignment. Specifically, it helped clarify the Cassandra composite partition key syntax, suggested the LSM tree / WiredTiger comparison for the tradeoffs analysis, and helped structure the aggregation pipeline logic. All final design decisions, data modeling choices, and written analysis reflect my own understanding of the material covered in Weeks 10 and 11.
+I primarily used online resources and course materials to complete this assignment. For a few minor doubts and clarifications, I referred to general explanations available online. All design decisions, data modeling choices, and the written analysis are based on my own understanding of the material covered in Weeks 10 and 11.
