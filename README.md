@@ -1,5 +1,4 @@
-# CS 6500 — Assignment 3: NoSQL Database Design and Querying
-
+# NoSQL E-Commerce Analytics Platform
 **Due:** End of Week 12 (Sunday, 11:59 PM) **Total Points:** 50 **Prereqs:** Week 10 (MongoDB), Week 11 (Cassandra)
 
 ## Overview
