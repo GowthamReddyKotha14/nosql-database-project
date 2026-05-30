@@ -1,9 +1,18 @@
 # NoSQL E-Commerce Analytics Platform
-**Due:** End of Week 12 (Sunday, 11:59 PM) **Total Points:** 50 **Prereqs:** Week 10 (MongoDB), Week 11 (Cassandra)
 
 ## Overview
 
-Design and evaluate schemas across two NoSQL paradigms — document (MongoDB) and wide-column (Cassandra) — for an e-commerce analytics scenario.
+This project explores the design and implementation of scalable NoSQL database solutions for an e-commerce analytics workload using MongoDB and Apache Cassandra.
+
+##Key contributions include:
+
+Designing document-based schemas in MongoDB
+Designing wide-column schemas in Cassandra
+Implementing analytical and aggregation queries
+Evaluating performance and scalability trade-offs
+Demonstrating consistency and data-modeling strategies across NoSQL paradigms
+
+Technologies: MongoDB, Cassandra, Docker, JavaScript, CQL, Python Testing
 
 ## Repository Structure
 
