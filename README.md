@@ -4,7 +4,7 @@
 
 This project explores the design and implementation of scalable NoSQL database solutions for an e-commerce analytics workload using MongoDB and Apache Cassandra.
 
-##Key contributions include:
+## Key contributions include:
 
 Designing document-based schemas in MongoDB
 Designing wide-column schemas in Cassandra
